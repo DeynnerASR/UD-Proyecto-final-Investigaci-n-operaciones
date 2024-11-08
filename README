@@ -1,0 +1,7 @@
+# Para inicializar el proyecto, siga los siguientes pasos:
+## Instale las siguietesdependencias
+- numpy 
+- sympy 
+- matplotlib
+
+### con : pip install dependencia

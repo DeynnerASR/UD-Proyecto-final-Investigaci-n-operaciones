@@ -1,0 +1,7 @@
+# Ignorar archivos de caché y compilación
+__pycache__/
+*.py[cod]
+
+# Ignorar archivos de dependencias
+*.egg-info/
+*.whl
