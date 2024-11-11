@@ -3,5 +3,6 @@
 - numpy 
 - sympy 
 - matplotlib
+- requests
 
 ### con : pip install dependencia
