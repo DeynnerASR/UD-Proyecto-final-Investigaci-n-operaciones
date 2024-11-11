@@ -5,6 +5,10 @@ import matplotlib.pyplot as plt
 import sympy as sp
 from sympy import symbols, Eq, solve, sympify
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+import requests
+import re
+
+
 
 class Principal(tk.Frame):
 
@@ -69,6 +73,40 @@ class Inputs_metodo_grafico(tk.Frame):
         self.warning_entry_ob = None
         self.warning_entry_res = None
 
+    
+
+    def realizarPeticion(self):
+        print("Realizando petición HTTP")
+
+        # URL a la que se enviará la petición
+        url = 'https://retoolapi.dev/NRPMBm/deliveries'
+
+        # Datos que se enviarán en el cuerpo de la petición
+        funcion_objetivo = self.ob.get()  # La función objetivo ingresada por el usuario
+        tipo = self.MinMaxtype.get() == "Maximo"  # Tipo de optimización (Maximizar o Minimizar)
+        lista_restricciones_texto = [widget.get() for widget in self.entry_widgets]  # Lista de restricciones
+
+        print(lista_restricciones_texto)
+
+        # Preparar los datos para la solicitud
+        data = {
+            'id':9999,
+            'objetiveFunctionText': funcion_objetivo,
+            'restrictionsText': lista_restricciones_texto,
+            'isMaximization': tipo
+        }
+
+        # Realizar la petición POST
+        respuesta = requests.post(url, json=data)
+
+        # Imprimir la respuesta del servidor
+        if respuesta.status_code == 200:
+            print("Petición realizada con éxito:", respuesta.json())
+        else:
+            print("Error en la petición:", respuesta.status_code, respuesta.text)
+
+
+    # Funcion la cual se va a ejecutar cuando presione el boton continuar
     def Proceso_mg(self):
         if (self.revision_f() == False):
             return
@@ -98,14 +136,37 @@ class Inputs_metodo_grafico(tk.Frame):
             )
         """
 
+        funcion_objetivo = self.ob.get()
+        print(f'Función objetivo: {funcion_objetivo}')
+        
+        # Imprimir la cantidad de variables
+        cantv = int(self.cantv.get())
+        print(f'Cantidad de variables: {cantv}')
+
+        self.realizarPeticion()
+
+        # Imprimir cada restricción ingresada
+        for i, widget in enumerate(self.entry_widgets, start=1):
+            restriccion = widget.get()
+            print(f'Restricción {i}: {restriccion}')
+
+        #En este punto debo enviar los datos a la appi
+
         if self.Metodo.get() == "Grafico":
             x1, x2 = sp.symbols('x1 x2')
             funcion_objetivo = self.ob.get()
 
             for widget in self.entry_widgets:
-                lhs_str, rhs_str = widget.get().split('=')  
-                lhs = sympify(lhs_str.strip())
-                rhs = sympify(rhs_str.strip())
+                lhs_str, rhs_str = widget.get().split('=')    
+                
+                lhs_1 = re.sub(r'(\d)([a-zA-Z])', r'\1*\2', lhs_str)
+                rhs_1 = re.sub(r'(\d)([a-zA-Z])', r'\1*\2', rhs_str)
+
+                lhs = sympify(lhs_1.strip())
+                rhs = sympify(rhs_1.strip())
+
+
+                #restriccion = sp.Eq(lhs, rhs)
                 restriccion = sp.Eq(lhs, rhs)
                 corte_x1 = sp.solve(restriccion.subs(x2, 0), x1)
                 corte_x2 = sp.solve(restriccion.subs(x1, 0), x2)
@@ -200,6 +261,13 @@ class Inputs_metodo_grafico(tk.Frame):
         cantv = int(self.cantv.get())
         cant_res = int(self.cant_res.get())
 
+        print(cantv)
+        print(cant_res)
+
+# Aqui agrega las restricciones y el boton continar para el metodo grafico, teniendo en cuenta los siguientes datos
+        # cantv (cantidad de variables) sea igual a 2
+        # metodo (sea igual a "Grafico")
+        # cant_res (cantidad de restricciones) sea mayor a 0
         if (cantv == 2 and self.Metodo.get() == "Grafico" and cant_res > 0):
             for i in range(cant_res):
                 restriccion_var = tk.StringVar(self)
@@ -216,6 +284,10 @@ class Inputs_metodo_grafico(tk.Frame):
         elif (self.Metodo.get() == "Grafico"):
             self.Condicional_max()  
 
+# Aqui agrega las restricciones y el boton continar para el metodo de dos fases, teniendo en cuenta los siguientes datos
+        # cantv (cantidad de variables) sea igual a 2
+        # metodo (sea igual a "Grafico")
+        # cant_res (cantidad de restricciones) sea mayor a 0
         if (cantv > 0 and cantv <=15 and self.Metodo.get() == "Dos" and cant_res > 0):
             for i in range(cant_res):
                 restriccion_var = tk.StringVar(self)
