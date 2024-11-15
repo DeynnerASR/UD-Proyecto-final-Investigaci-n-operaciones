@@ -6,6 +6,7 @@ import sympy as sp
 from sympy import symbols, Eq, solve, sympify
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import requests
+import json 
 import re
 
 
@@ -45,6 +46,8 @@ class Inputs_metodo_grafico(tk.Frame):
         self.controller = controller
         self.MinMaxtype = tk.StringVar(self, value="Maximo")
         self.Metodo = tk.StringVar(self, value="Grafico")
+
+        self.result_panel = None
 
         # Configurar canvas y scrollbar
         self.canvas = tk.Canvas(self, background=style.BACKGROUND)
@@ -105,9 +108,30 @@ class Inputs_metodo_grafico(tk.Frame):
 
         # Imprimir la respuesta del servidor
         if respuesta.status_code == 200:
-            print("Petición realizada con éxito:", respuesta.json())
+            resultado = respuesta.json();
+            print("Petición realizada con éxito:", resultado)
+            self.mostrar_resultados(resultado)
         else:
             print("Error en la petición:", respuesta.status_code, respuesta.text)
+
+    def mostrar_resultados(self, resultado):
+        if not self.result_panel:
+            # Crear el panel si no existe
+            self.result_panel = tk.Text(self.scrollable_frame, height=10, wrap="word")
+            self.result_panel.pack(fill="x", padx=10, pady=10)
+            self.result_panel.config(state="disabled")  # Hacer no editable
+
+        # Actualizar contenido
+        self.result_panel.config(state="normal")  # Permitir edición temporal
+        self.result_panel.delete(1.0, tk.END)  # Limpiar contenido previo
+        self.result_panel.insert(tk.END, f"Resultados:\nIntersecciones:\n")  # Agregar datos        
+        for point in resultado['intersections']:
+            print(f"x: {point['x']}, y: {point['y']}")
+            self.result_panel.insert(tk.END, f"x: {point['x']}, y: {point['y']}) \n");
+        
+        self.result_panel.insert(tk.END, f"\nValor minimo:{resultado['minValue']}\nValor maximo:{resultado['maxValue']}")  # Agregar datos        
+        
+        self.result_panel.config(state="disabled")  # Volver a deshabilitar
 
     # Funcion la cual se va a ejecutar cuando presione el boton continuar
     def Proceso_mg(self):
@@ -540,6 +564,8 @@ class Inputs_metodo_grafico(tk.Frame):
             padx=5, 
             pady=5
         )
+
+        
 
 """
 class Metodo_grafico(tk.Frame):
