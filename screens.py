@@ -79,22 +79,26 @@ class Inputs_metodo_grafico(tk.Frame):
         print("Realizando petición HTTP")
 
         # URL a la que se enviará la petición
-        url = 'https://retoolapi.dev/NRPMBm/deliveries'
+        url = 'https://graphicalmethodapi-dmd3bca6e6dpenev.canadacentral-01.azurewebsites.net/graphical-method/show'
 
         # Datos que se enviarán en el cuerpo de la petición
         funcion_objetivo = self.ob.get()  # La función objetivo ingresada por el usuario
+        funcion_objetivo = re.sub(r'x1', 'x', re.sub(r'x2', 'y', funcion_objetivo))
         tipo = self.MinMaxtype.get() == "Maximo"  # Tipo de optimización (Maximizar o Minimizar)
-        lista_restricciones_texto = [widget.get() for widget in self.entry_widgets]  # Lista de restricciones
+        # Convertir variables x1, x2, etc., a x, y, etc., en las restricciones
+        lista_restricciones_texto = [re.sub(r'x1', 'x', re.sub(r'x2', 'y', widget.get())) for widget in self.entry_widgets]
 
-        print(lista_restricciones_texto)
+        print("funcion objetivo transformada:", funcion_objetivo)
+        print("Restricciones transformadas:", lista_restricciones_texto)
 
         # Preparar los datos para la solicitud
         data = {
-            'id':9999,
-            'objetiveFunctionText': funcion_objetivo,
-            'restrictionsText': lista_restricciones_texto,
-            'isMaximization': tipo
+            "objectiveFunctionText": funcion_objetivo,
+            "restrictionsText": lista_restricciones_texto,
+            "isMaximization": tipo
         }
+
+        print ('Body de la peticion : ',data)
 
         # Realizar la petición POST
         respuesta = requests.post(url, json=data)
@@ -104,7 +108,6 @@ class Inputs_metodo_grafico(tk.Frame):
             print("Petición realizada con éxito:", respuesta.json())
         else:
             print("Error en la petición:", respuesta.status_code, respuesta.text)
-
 
     # Funcion la cual se va a ejecutar cuando presione el boton continuar
     def Proceso_mg(self):
