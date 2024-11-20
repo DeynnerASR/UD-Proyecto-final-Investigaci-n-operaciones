@@ -82,7 +82,7 @@ class Inputs_metodo_grafico(tk.Frame):
         print("Realizando petición HTTP")
 
         # URL a la que se enviará la petición
-        url = 'https://graphicalmethodapi-dmd3bca6e6dpenev.canadacentral-01.azurewebsites.net/graphical-method/show'
+        url = 'https://graphicalmethodapi-dmd3bca6e6dpenev.canadacentral-01.azurewebsites.net/graphical-method/solve'
 
         # Datos que se enviarán en el cuerpo de la petición
         funcion_objetivo = self.ob.get()  # La función objetivo ingresada por el usuario
@@ -106,6 +106,7 @@ class Inputs_metodo_grafico(tk.Frame):
         # Realizar la petición POST
         respuesta = requests.post(url, json=data)
 
+        
         # Imprimir la respuesta del servidor
         if respuesta.status_code == 200:
             resultado = respuesta.json();
@@ -115,6 +116,7 @@ class Inputs_metodo_grafico(tk.Frame):
             print("Error en la petición:", respuesta.status_code, respuesta.text)
 
     def mostrar_resultados(self, resultado):
+        
         if not self.result_panel:
             # Crear el panel si no existe
             self.result_panel = tk.Text(self.scrollable_frame, height=10, wrap="word")
@@ -122,6 +124,8 @@ class Inputs_metodo_grafico(tk.Frame):
             self.result_panel.config(state="disabled")  # Hacer no editable
 
         # Actualizar contenido
+        tipo_funcion = self.MinMaxtype.get()
+
         self.result_panel.config(state="normal")  # Permitir edición temporal
         self.result_panel.delete(1.0, tk.END)  # Limpiar contenido previo
         self.result_panel.insert(tk.END, f"Resultados:\nIntersecciones:\n")  # Agregar datos        
@@ -129,8 +133,21 @@ class Inputs_metodo_grafico(tk.Frame):
             print(f"x: {point['x']}, y: {point['y']}")
             self.result_panel.insert(tk.END, f"x: {point['x']}, y: {point['y']}) \n");
         
-        self.result_panel.insert(tk.END, f"\nValor minimo:{resultado['minValue']}\nValor maximo:{resultado['maxValue']}")  # Agregar datos        
+
+        intersecciones = resultado['intersections']
         
+
+        if tipo_funcion == 'Maximo':
+                
+            indice = resultado['maxIndex']
+            self.result_panel.insert(tk.END, f"Puntos de la solucion : {intersecciones[indice]}")  
+            self.result_panel.insert(tk.END, f"\nValor maximo:{resultado['maxValue']}")  # Agregar datos                    
+        else:
+            indice = resultado['minIndex']
+            self.result_panel.insert(tk.END, f"Puntos de la solucion : {intersecciones[indice]}")  
+            self.result_panel.insert(tk.END, f"\nValor minimo:{resultado['minValue']}")  # Agregar datos        
+        #if tipo = "Maximo":
+                
         self.result_panel.config(state="disabled")  # Volver a deshabilitar
 
     # Funcion la cual se va a ejecutar cuando presione el boton continuar
