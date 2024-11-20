@@ -2,6 +2,8 @@
 __pycache__/
 *.py[cod]
 
+pruebaPeticcion.js
+
 # Ignorar archivos de dependencias
 *.egg-info/
 *.whl
